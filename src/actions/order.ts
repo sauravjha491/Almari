@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 
 export async function createOrder(data: {
+  userId?: string;
   email: string;
   fullName: string;
   phone: string;
@@ -55,6 +56,7 @@ export async function createOrder(data: {
       // Create order
       const newOrder = await tx.order.create({
         data: {
+          userId: data.userId,
           email: data.email,
           fullName: data.fullName,
           phone: data.phone,
@@ -75,6 +77,17 @@ export async function createOrder(data: {
         await tx.product.update({
           where: { id: item.productId },
           data: { stock: { decrement: item.quantity } },
+        });
+      }
+
+      // Create notification for user if logged in
+      if (data.userId) {
+        await tx.notification.create({
+          data: {
+            userId: data.userId,
+            orderId: newOrder.id,
+            message: `Order #${newOrder.id.slice(-6).toUpperCase()} placed successfully! We'll notify you when it ships.`,
+          },
         });
       }
 

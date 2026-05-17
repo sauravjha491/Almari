@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { CartLink } from "@/components/cart-link";
+import { UserNav } from "@/components/user-nav";
 import { cn } from "@/lib/cn";
 
 export async function SiteHeader() {
@@ -51,14 +52,9 @@ export async function SiteHeader() {
           </div>
         </form>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/search"
-            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 sm:block"
-          >
-            Deals
-          </Link>
+        <div className="flex items-center gap-4">
           <CartLink />
+          <UserNav />
         </div>
       </div>
 
