@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Package, Plus, Search, MoreVertical, Edit, Trash2, X, Upload, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
+import { Package, Plus, Search, MoreVertical, Edit, Trash2, X, Upload, Link as LinkIcon, Loader2 } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import Image from "next/image";
 import { cn } from "@/lib/cn";
@@ -11,7 +11,9 @@ export default function AdminProducts() {
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const [imageSource, setImageSource] = useState<"url" | "upload">("url");
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -22,20 +24,20 @@ export default function AdminProducts() {
   });
 
   const fetchData = async () => {
+    setIsLoading(true);
     const [pRes, cRes] = await Promise.all([
       fetch("/api/admin/products"),
       fetch("/api/search"),
     ]);
     const pData = await pRes.json();
+    const cData = await cRes.json();
     setProducts(pData);
+    setCategories(cData.categories || []);
     setIsLoading(false);
   };
 
   useEffect(() => {
     fetchData();
-    fetch("/api/search")
-      .then(res => res.json())
-      .then(data => setCategories(data.categories || []));
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,23 +51,60 @@ export default function AdminProducts() {
     }
   };
 
-  const handleAddProduct = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/admin/products", {
-      method: "POST",
-      body: JSON.stringify({
-        ...formData,
-        images: [{ url: formData.imageUrl }]
-      }),
+    const method = editingProduct ? "PATCH" : "POST";
+    const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : "/api/admin/products";
+    
+    const body = editingProduct 
+      ? { ...formData }
+      : { ...formData, images: [{ url: formData.imageUrl }] };
+
+    const res = await fetch(url, {
+      method,
+      body: JSON.stringify(body),
     });
+
     if (res.ok) {
       setIsModalOpen(false);
+      setEditingProduct(null);
       setFormData({ title: "", description: "", price: "", stock: "", categoryId: "", imageUrl: "" });
       fetchData();
     }
   };
 
-  if (isLoading) return <div>Loading products...</div>;
+  const handleEdit = (product: any) => {
+    setEditingProduct(product);
+    setFormData({
+      title: product.title,
+      description: product.description,
+      price: product.price.toString(),
+      stock: product.stock.toString(),
+      categoryId: product.categoryId,
+      imageUrl: product.images?.[0]?.url || "",
+    });
+    setImageSource("url");
+    setIsModalOpen(true);
+    setActiveMenu(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Are you sure you want to delete this product?")) {
+      const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        fetchData();
+      }
+    }
+    setActiveMenu(null);
+  };
+
+  if (isLoading && products.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin text-blue-600" size={40} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -75,7 +114,11 @@ export default function AdminProducts() {
           <p className="text-slate-500 dark:text-zinc-400 mt-1">Manage your store's inventory and stock</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setEditingProduct(null);
+            setFormData({ title: "", description: "", price: "", stock: "", categoryId: "", imageUrl: "" });
+            setIsModalOpen(true);
+          }}
           className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
         >
           <Plus size={20} /> Add New Product
@@ -141,10 +184,33 @@ export default function AdminProducts() {
                       <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-tighter">Active</span>
                     </span>
                   </td>
-                  <td className="px-8 py-6 text-right">
-                    <button className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-all border border-transparent hover:border-slate-100 dark:hover:border-zinc-600">
+                  <td className="px-8 py-6 text-right relative">
+                    <button 
+                      onClick={() => setActiveMenu(activeMenu === product.id ? null : product.id)}
+                      className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-all border border-transparent hover:border-slate-100 dark:hover:border-zinc-600"
+                    >
                       <MoreVertical size={18} />
                     </button>
+                    
+                    {activeMenu === product.id && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
+                        <div className="absolute right-8 top-12 w-40 bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-slate-100 dark:border-zinc-700 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700/50 transition-colors"
+                          >
+                            <Edit size={16} className="text-blue-500" /> Edit Product
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                          >
+                            <Trash2 size={16} /> Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -153,14 +219,18 @@ export default function AdminProducts() {
         </div>
       </div>
 
-      {/* Add Product Modal */}
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md">
           <div className="bg-white dark:bg-zinc-900 w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col max-h-[90vh] border border-slate-100 dark:border-zinc-800">
             <div className="px-8 py-6 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-900 flex-shrink-0">
               <div>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white">Add New Product</h2>
-                <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Fill in the details to list a new item</p>
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+                  {editingProduct ? "Edit Product" : "Add New Product"}
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                  {editingProduct ? "Update product details and stock" : "Fill in the details to list a new item"}
+                </p>
               </div>
               <button 
                 onClick={() => setIsModalOpen(false)} 
@@ -170,7 +240,7 @@ export default function AdminProducts() {
               </button>
             </div>
             
-            <form onSubmit={handleAddProduct} className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
                   <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500 ml-1">Product Title</label>
@@ -323,11 +393,12 @@ export default function AdminProducts() {
               </button>
               <button
                 type="button"
-                onClick={handleAddProduct}
+                onClick={handleSubmit}
                 disabled={!formData.imageUrl || !formData.title || !formData.categoryId || !formData.price}
                 className="flex-[2] py-4 px-6 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/25 active:scale-95 disabled:opacity-40 disabled:grayscale disabled:active:scale-100 flex items-center justify-center gap-2"
               >
-                <Plus size={20} /> Publish Product
+                {editingProduct ? <Edit size={20} /> : <Plus size={20} />}
+                {editingProduct ? "Update Product" : "Publish Product"}
               </button>
             </div>
           </div>
