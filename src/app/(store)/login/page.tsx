@@ -28,28 +28,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center">
-      <div className="w-full max-w-md p-8 bg-white rounded-[32px] shadow-xl shadow-slate-200/50 border border-slate-100">
+    <div className="flex min-h-[70vh] items-center justify-center py-12">
+      <div className="w-full max-w-md p-8 bg-white dark:bg-zinc-900 rounded-[32px] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-zinc-800">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-slate-900">Welcome Back</h1>
-          <p className="text-slate-500 mt-2">Log in to your Almari account</p>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">Welcome Back</h1>
+          <p className="text-slate-500 dark:text-zinc-400 mt-2">Log in to your Almari account</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-sm font-medium border border-red-100">
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-2xl text-sm font-medium border border-red-100 dark:border-red-900/20">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 ml-1">Email Address</label>
+            <label className="text-sm font-bold text-slate-700 dark:text-zinc-300 ml-1">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" size={20} />
               <input
                 type="email"
                 required
-                className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-slate-900"
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                 placeholder="name@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -58,13 +58,13 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 ml-1">Password</label>
+            <label className="text-sm font-bold text-slate-700 dark:text-zinc-300 ml-1">Password</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-zinc-500" size={20} />
               <input
                 type="password"
                 required
-                className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-slate-900"
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500"
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -82,9 +82,9 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-8 text-center">
-          <p className="text-slate-500">
+          <p className="text-slate-500 dark:text-zinc-400">
             Don't have an account?{" "}
-            <Link href="/register" className="text-blue-600 font-bold hover:underline">
+            <Link href="/register" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
               Register Now
             </Link>
           </p>

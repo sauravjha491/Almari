@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ShoppingBag, Truck, CheckCircle, Clock, MoreVertical } from "lucide-react";
 import { formatMoney } from "@/lib/money";
+import { cn } from "@/lib/cn";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -75,8 +76,4 @@ export default function AdminOrders() {
       </div>
     </div>
   );
-}
-
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(" ");
 }

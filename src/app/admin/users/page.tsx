@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Users, Mail, Calendar, Shield, MoreVertical } from "lucide-react";
+import { cn } from "@/lib/cn";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<any[]>([]);
@@ -74,8 +75,4 @@ export default function AdminUsers() {
       </div>
     </div>
   );
-}
-
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(" ");
 }
