@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/money";
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { WishlistButton } from "@/components/wishlist-button";
 
 export function ProductCard({
   product,
@@ -32,6 +33,9 @@ export function ProductCard({
               sizes="(max-width: 640px) 100vw, 33vw"
             />
           ) : null}
+          <div className="absolute top-2 right-2">
+            <WishlistButton productId={product.id} />
+          </div>
         </div>
       </Link>
 

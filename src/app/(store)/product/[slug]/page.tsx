@@ -1,4 +1,5 @@
 import { AddToCartButton } from "@/components/add-to-cart-button";
+import { WishlistButton } from "@/components/wishlist-button";
 import { formatMoney } from "@/lib/money";
 import { prisma } from "@/lib/db";
 import Image from "next/image";
@@ -77,15 +78,21 @@ export default async function ProductPage({
               </div>
             </div>
 
-            <div className="mt-8">
-              <AddToCartButton
-                item={{
-                  productId: product.id,
-                  slug: product.slug,
-                  title: product.title,
-                  price: product.price,
-                  imageUrl: firstImage?.url,
-                }}
+            <div className="mt-8 flex gap-4">
+              <div className="flex-1">
+                <AddToCartButton
+                  item={{
+                    productId: product.id,
+                    slug: product.slug,
+                    title: product.title,
+                    price: product.price,
+                    imageUrl: firstImage?.url,
+                  }}
+                />
+              </div>
+              <WishlistButton 
+                productId={product.id} 
+                className="h-[52px] w-[52px] flex items-center justify-center bg-pink-50 dark:bg-pink-900/20" 
               />
             </div>
           </div>

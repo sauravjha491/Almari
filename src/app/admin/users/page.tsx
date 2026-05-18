@@ -19,10 +19,21 @@ export default function AdminUsers() {
 
   const fetchUsers = async () => {
     setIsLoading(true);
-    const res = await fetch("/api/admin/users");
-    const data = await res.json();
-    setUsers(data);
-    setIsLoading(false);
+    try {
+      const res = await fetch("/api/admin/users");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setUsers(data);
+      } else {
+        console.error("Received non-array data from /api/admin/users:", data);
+        setUsers([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+      setUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -101,67 +112,75 @@ export default function AdminUsers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/50 transition-colors group">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                        {user.name?.[0] || user.email[0].toUpperCase()}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-bold text-slate-900 dark:text-white truncate">{user.name || "Anonymous User"}</span>
-                        <span className="text-xs text-slate-400 dark:text-zinc-500 truncate">{user.email}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className={cn(
-                      "inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                      user.role === "ADMIN" 
-                        ? "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400" 
-                        : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                    )}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 text-slate-500 dark:text-zinc-400 text-sm whitespace-nowrap">
-                    {new Date(user.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
-                  </td>
-                  <td className="px-8 py-6">
-                    <span className="font-bold text-slate-900 dark:text-white">
-                      {user._count?.orders || 0}
-                    </span>
-                  </td>
-                  <td className="px-8 py-6 text-right relative">
-                    <button 
-                      onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
-                      className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-all border border-transparent hover:border-slate-100 dark:hover:border-zinc-600"
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-
-                    {activeMenu === user.id && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
-                        <div className="absolute right-8 top-12 w-40 bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-slate-100 dark:border-zinc-700 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                          <button
-                            onClick={() => handleEdit(user)}
-                            className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700/50 transition-colors"
-                          >
-                            <Edit size={16} className="text-blue-500" /> Edit User
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user.id)}
-                            className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-                          >
-                            <Trash2 size={16} /> Delete User
-                          </button>
-                        </div>
-                      </>
-                    )}
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-8 py-12 text-center text-slate-500 dark:text-zinc-400 font-medium">
+                    No users found in the system
                   </td>
                 </tr>
-              ))}
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/50 transition-colors group">
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                          {user.name?.[0] || user.email?.[0]?.toUpperCase() || "?"}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-bold text-slate-900 dark:text-white truncate">{user.name || "Anonymous User"}</span>
+                          <span className="text-xs text-slate-400 dark:text-zinc-500 truncate">{user.email}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={cn(
+                        "inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                        user.role === "ADMIN" 
+                          ? "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400" 
+                          : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                      )}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-slate-500 dark:text-zinc-400 text-sm whitespace-nowrap">
+                      {new Date(user.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className="font-bold text-slate-900 dark:text-white">
+                        {user._count?.orders || 0}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 text-right relative">
+                      <button 
+                        onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
+                        className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-all border border-transparent hover:border-slate-100 dark:hover:border-zinc-600"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+
+                      {activeMenu === user.id && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
+                          <div className="absolute right-8 top-12 w-40 bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-slate-100 dark:border-zinc-700 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <button
+                              onClick={() => handleEdit(user)}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700/50 transition-colors"
+                            >
+                              <Edit size={16} className="text-blue-500" /> Edit User
+                            </button>
+                            <button
+                              onClick={() => handleDelete(user.id)}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                            >
+                              <Trash2 size={16} /> Delete User
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { CartLink } from "@/components/cart-link";
+import { NotificationsLink } from "@/components/notifications-link";
 import { UserNav } from "@/components/user-nav";
 import { cn } from "@/lib/cn";
 
@@ -53,6 +54,7 @@ export async function SiteHeader() {
         </form>
 
         <div className="flex items-center gap-4">
+          <NotificationsLink />
           <CartLink />
           <UserNav />
         </div>

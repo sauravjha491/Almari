@@ -9,7 +9,7 @@ const navItems = [
   { label: "Home", href: "/", icon: Home },
   { label: "Cart", href: "/cart", icon: ShoppingCart },
   { label: "Wishlist", href: "/wishlist", icon: Heart },
-  { label: "Message", href: "/messages", icon: MessageSquare },
+  { label: "Messages", href: "/messages", icon: MessageSquare },
   { label: "Account", href: "/account", icon: User },
 ];
 

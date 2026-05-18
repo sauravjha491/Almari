@@ -3,21 +3,45 @@
 import { useEffect, useState } from "react";
 import { Users, ShoppingBag, Package, DollarSign, ArrowUpRight } from "lucide-react";
 import { formatMoney } from "@/lib/money";
+import Link from "next/link";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/admin/stats")
-      .then((res) => res.json())
-      .then((data) => {
+  const fetchStats = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/admin/stats");
+      const data = await res.json();
+      if (res.ok) {
         setStats(data);
-        setIsLoading(false);
-      });
+      } else {
+        console.error("Failed to fetch stats:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
   }, []);
 
-  if (isLoading) return <div>Loading dashboard...</div>;
+  if (isLoading) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
+
+  if (!stats) return (
+    <div className="text-center py-12">
+      <h2 className="text-xl font-bold text-slate-900">Failed to load dashboard data</h2>
+      <p className="text-slate-500 mt-2">Please try refreshing the page</p>
+    </div>
+  );
 
   const statCards = [
     { label: "Total Revenue", value: formatMoney(stats.totalIncome), icon: DollarSign, color: "bg-green-500" },
@@ -54,9 +78,12 @@ export default function AdminDashboard() {
         <div className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-black text-slate-900">Recent Orders</h2>
-            <button className="text-blue-600 font-bold hover:underline flex items-center gap-1">
+            <Link 
+              href="/admin/orders" 
+              className="text-blue-600 font-bold hover:underline flex items-center gap-1"
+            >
               View All <ArrowUpRight size={16} />
-            </button>
+            </Link>
           </div>
           <div className="space-y-4">
             {stats.recentOrders.map((order: any) => (

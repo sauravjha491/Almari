@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/stores/auth-store";
 import Link from "next/link";
-import { User, LogOut, LayoutDashboard, Loader2 } from "lucide-react";
+import { User, LogOut, LayoutDashboard, Loader2, MessageSquare, Heart } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export function UserNav() {
@@ -43,6 +43,12 @@ export function UserNav() {
             )}
             <Link href="/account" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg">
               <User size={16} /> My Account
+            </Link>
+            <Link href="/messages" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg">
+              <MessageSquare size={16} /> Messages
+            </Link>
+            <Link href="/wishlist" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg">
+              <Heart size={16} /> My Wishlist
             </Link>
             <button
               onClick={logout}

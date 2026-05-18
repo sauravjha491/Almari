@@ -3,8 +3,12 @@
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+
 export async function createOrder(data: {
-  userId?: string;
   email: string;
   fullName: string;
   phone: string;
@@ -13,6 +17,18 @@ export async function createOrder(data: {
   items: { productId: string; quantity: number }[];
 }) {
   try {
+    // Get user from token if available
+    let userId: string | undefined;
+    try {
+      const token = (await cookies()).get("token")?.value;
+      if (token) {
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+        userId = decoded.userId;
+      }
+    } catch (e) {
+      console.log("Not logged in or invalid token");
+    }
+
     // 1. Fetch products to get current prices and titles
     const productIds = data.items.map((item) => item.productId);
     const products = await prisma.product.findMany({
@@ -56,7 +72,7 @@ export async function createOrder(data: {
       // Create order
       const newOrder = await tx.order.create({
         data: {
-          userId: data.userId,
+          userId: userId,
           email: data.email,
           fullName: data.fullName,
           phone: data.phone,
@@ -81,10 +97,10 @@ export async function createOrder(data: {
       }
 
       // Create notification for user if logged in
-      if (data.userId) {
+      if (userId) {
         await tx.notification.create({
           data: {
-            userId: data.userId,
+            userId: userId,
             orderId: newOrder.id,
             message: `Order #${newOrder.id.slice(-6).toUpperCase()} placed successfully! We'll notify you when it ships.`,
           },
